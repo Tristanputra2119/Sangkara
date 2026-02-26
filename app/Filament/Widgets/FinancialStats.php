@@ -22,16 +22,16 @@ class FinancialStats extends StatsOverviewWidget
         };
 
         return [
-            Stat::make('Total Income', $formatIdr($income))
-                ->description('Total income recorded')
+            Stat::make('Total Pemasukan', $formatIdr($income))
+                ->description('Total pemasukan yang tercatat')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('success'),
-            Stat::make('Total Expense', $formatIdr($expense))
-                ->description('Total expenses recorded')
+            Stat::make('Total Pengeluaran', $formatIdr($expense))
+                ->description('Total pengeluaran yang tercatat')
                 ->descriptionIcon('heroicon-m-arrow-trending-down')
                 ->color('danger'),
-            Stat::make('Current Balance', $formatIdr($balance))
-                ->description('Maintained in Redis cache (10m)')
+            Stat::make('Saldo Saat Ini', $formatIdr($balance))
+                ->description($balance >= 0 ? 'Keuangan dalam kondisi baik' : 'Saldo negatif, perlu perhatian')
                 ->descriptionIcon($balance >= 0 ? 'heroicon-m-scale' : 'heroicon-m-exclamation-triangle')
                 ->color($balance >= 0 ? 'primary' : 'warning'),
         ];

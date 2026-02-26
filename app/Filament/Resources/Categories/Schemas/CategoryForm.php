@@ -13,12 +13,17 @@ class CategoryForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label('Nama Kategori')
+                    ->placeholder('Contoh: Konsumsi, Akomodasi')
+                    ->helperText('Nama kategori yang digunakan untuk pengelompokan transaksi.')
                     ->required()
                     ->maxLength(255),
                 Select::make('type')
+                    ->label('Jenis Kategori')
+                    ->helperText('Pilih apakah kategori ini untuk pemasukan atau pengeluaran.')
                     ->options([
-                        'income' => 'Income',
-                        'expense' => 'Expense',
+                        'income'  => 'Pemasukan',
+                        'expense' => 'Pengeluaran',
                     ])
                     ->required(),
             ]);

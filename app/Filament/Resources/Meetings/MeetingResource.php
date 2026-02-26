@@ -20,7 +20,12 @@ class MeetingResource extends Resource
 {
     protected static ?string $model = Meeting::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
+    protected static ?string $navigationLabel   = 'Rapat';
+    protected static ?string $modelLabel        = 'Rapat';
+    protected static ?string $pluralModelLabel  = 'Daftar Rapat';
+    protected static string|\UnitEnum|null $navigationGroup   = 'Manajemen Kegiatan';
+    protected static ?int    $navigationSort    = 2;
 
     public static function form(Schema $schema): Schema
     {

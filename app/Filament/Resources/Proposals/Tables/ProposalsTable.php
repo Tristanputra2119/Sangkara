@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\Reports\Tables;
+namespace App\Filament\Resources\Proposals\Tables;
 
-use App\Models\Report;
+use App\Models\Proposal;
 use App\Services\ProposalGeneratorService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -11,14 +11,14 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class ReportsTable
+class ProposalsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('title')
-                    ->label('Judul Laporan')
+                    ->label('Judul Pengajuan')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
@@ -41,15 +41,15 @@ class ReportsTable
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'draft'       => 'Draft',
                         'processing'  => 'Diproses',
-                        'finalized'   => 'Selesai',
-                        'failed'      => 'Gagal',
+                        'approved'    => 'Disetujui',
+                        'rejected'    => 'Ditolak',
                         default       => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
                         'draft'       => 'gray',
                         'processing'  => 'warning',
-                        'finalized'   => 'success',
-                        'failed'      => 'danger',
+                        'approved'    => 'success',
+                        'rejected'    => 'danger',
                         default       => 'gray',
                     }),
                 TextColumn::make('created_at')
@@ -68,20 +68,10 @@ class ReportsTable
             ])
             ->recordActions([
                 EditAction::make()->label('Edit'),
-                Action::make('generateLpj')
-                    ->label('Generate LPJ')
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->color('success')
-                    ->action(fn (Report $record) => $record->generateDocx())
-                    ->requiresConfirmation()
-                    ->modalHeading('Generate Dokumen Word')
-                    ->modalDescription('Dokumen LPJ dalam format Word akan digenerate di latar belakang. Lanjutkan?')
-                    ->modalSubmitActionLabel('Ya, Generate')
-                    ->disabled(fn (Report $record) => $record->status === 'processing'),
-                Action::make('downloadLpj')
-                    ->label('Unduh LPJ')
+                Action::make('downloadDocument')
+                    ->label('Unduh Dokumen')
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->color('primary')
+                    ->color('success')
                     ->form([
                         \Filament\Forms\Components\Select::make('format')
                             ->label('Pilih Format Dokumen')
@@ -92,41 +82,31 @@ class ReportsTable
                             ->default('docx')
                             ->required(),
                     ])
-                    ->action(function (Report $record, array $data) {
-                        if (empty($record->file_path)) {
-                            \Filament\Notifications\Notification::make()
-                                ->title('File belum digenerate.')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
-
-                        $fullDocxPath = storage_path('app/public/' . $record->file_path);
-                        if (!file_exists($fullDocxPath)) {
-                            \Filament\Notifications\Notification::make()
-                                ->title('File Word sumber tidak ditemukan.')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
+                    ->action(function (Proposal $record, array $data) {
+                        // Generate the DOCX file first
+                        $service = app(\App\Services\ProposalGeneratorService::class);
+                        $relativePath = $service->generate($record);
+                        $fullDocxPath = storage_path('app/public/' . $relativePath);
 
                         if ($data['format'] === 'pdf') {
+                            // Convert DOCX to PDF
                             $converter = app(\App\Services\DocumentConversionService::class);
                             $pdfPath = $converter->convertDocxToPdf($fullDocxPath);
                             return response()->download($pdfPath)->deleteFileAfterSend(false);
                         }
 
+                        // Just download the DOCX
                         return response()->download($fullDocxPath)->deleteFileAfterSend(false);
                     })
-                    ->visible(fn (Report $record) => $record->status === 'finalized' && !empty($record->file_path)),
+                    ->visible(fn (Proposal $record) => !empty($record->content)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->label('Hapus yang Dipilih'),
                 ]),
             ])
-            ->emptyStateHeading('Belum Ada Laporan')
-            ->emptyStateDescription('Mulai dengan membuat laporan kegiatan pertama Anda.')
-            ->emptyStateIcon('heroicon-o-document-text');
+            ->emptyStateHeading('Belum Ada Pengajuan')
+            ->emptyStateDescription('Mulai dengan membuat pengajuan kegiatan baru.')
+            ->emptyStateIcon('heroicon-o-clipboard-document-check');
     }
 }

@@ -18,7 +18,12 @@ class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+    protected static ?string $navigationLabel     = 'Laporan Kegiatan';
+    protected static ?string $modelLabel          = 'Laporan';
+    protected static ?string $pluralModelLabel    = 'Laporan Kegiatan';
+    protected static string|\UnitEnum|null $navigationGroup     = 'Manajemen Kegiatan';
+    protected static ?int    $navigationSort      = 3;
 
     public static function form(Schema $schema): Schema
     {

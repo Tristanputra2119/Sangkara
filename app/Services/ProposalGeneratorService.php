@@ -2,19 +2,19 @@
 
 namespace App\Services;
 
-use App\Models\Report;
+use App\Models\Proposal;
 use Carbon\Carbon;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 class ProposalGeneratorService
 {
     /**
-     * Generate a "Pengajuan Kegiatan Bulanan" document from Report->content.
+     * Generate a "Pengajuan Kegiatan Bulanan" document from Proposal->content.
      *
-     * @param  Report  $report  The report whose content array drives the document.
+     * @param  Proposal  $proposal  The proposal whose content array drives the document.
      * @return string The relative file path within the public disk.
      */
-    public function generate(Report $report): string
+    public function generate(Proposal $proposal): string
     {
         $templatePath = storage_path('app/templates/template_pengajuan_primdev.docx');
 
@@ -25,15 +25,15 @@ class ProposalGeneratorService
         $templateProcessor = new TemplateProcessor($templatePath);
 
         // --- Static Variables ---
-        $carbonDate = Carbon::createFromDate($report->year, $report->month, 1);
+        $carbonDate = Carbon::createFromDate($proposal->year, $proposal->month, 1);
         $bulanUpper = strtoupper($carbonDate->translatedFormat('F'));
 
         $templateProcessor->setValue('BULAN_UPPER', $bulanUpper);
-        $templateProcessor->setValue('TAHUN', (string) $report->year);
+        $templateProcessor->setValue('TAHUN', (string) $proposal->year);
         $templateProcessor->setValue('TGL_SEKARANG', Carbon::now()->translatedFormat('d F Y'));
 
-        // --- Dynamic List from Report->content (cloneBlock) ---
-        $items = $report->content ?? [];
+        // --- Dynamic List from Proposal->content (cloneBlock) ---
+        $items = $proposal->content ?? [];
 
         if (! empty($items)) {
             $templateProcessor->cloneBlock('block_kegiatan', count($items), true, true);
@@ -46,7 +46,7 @@ class ProposalGeneratorService
                 $templateProcessor->setValue("lok_kegiatan#$i", $item['location'] ?? '-');
 
                 // Support multiline descriptions via XML line breaks
-                $cleanDesc = preg_replace('~\R~u', '</w:t><w:br/><w:t>', $item['description'] ?? '-');
+                $cleanDesc = preg_replace('~\R~u', '</w:t><w:br/><w:t>', strip_tags($item['description'] ?? '-'));
                 $templateProcessor->setValue("deskripsi_lengkap#$i", $cleanDesc);
             }
         } else {
@@ -65,14 +65,14 @@ class ProposalGeneratorService
             mkdir($outputDir, 0755, true);
         }
 
-        $monthPadded = str_pad($report->month, 2, '0', STR_PAD_LEFT);
-        $filename = "Pengajuan_PrimDev_{$monthPadded}_{$report->year}.docx";
+        $monthPadded = str_pad($proposal->month, 2, '0', STR_PAD_LEFT);
+        $filename = "Pengajuan_PrimDev_{$monthPadded}_{$proposal->year}.docx";
         $fullPath = $outputDir.DIRECTORY_SEPARATOR.$filename;
 
         $templateProcessor->saveAs($fullPath);
 
-        // Update Report file_path
-        $report->update(['file_path' => 'proposals/'.$filename]);
+        // Update Proposal file_path
+        $proposal->update(['file_path' => 'proposals/'.$filename]);
 
         return 'proposals/'.$filename;
     }

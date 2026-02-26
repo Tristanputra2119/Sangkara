@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Reports\Schemas;
+namespace App\Filament\Resources\Proposals\Schemas;
 
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
@@ -10,7 +10,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
-class ReportForm
+class ProposalForm
 {
     public static function configure(Schema $schema): Schema
     {
@@ -19,14 +19,14 @@ class ReportForm
                 Hidden::make('user_id')
                     ->default(fn () => auth()->id()),
                 TextInput::make('title')
-                    ->label('Judul Laporan')
-                    ->placeholder('Contoh: Laporan Kegiatan OSPEK 2025')
-                    ->helperText('Masukkan judul laporan yang singkat dan jelas.')
+                    ->label('Judul Pengajuan')
+                    ->placeholder('Contoh: Pengajuan Dana Acara Seminar Nasional')
+                    ->helperText('Masukkan judul pengajuan secara singkat dan jelas.')
                     ->required()
                     ->maxLength(255),
                 Select::make('month')
-                    ->label('Bulan')
-                    ->helperText('Pilih bulan pelaksanaan kegiatan.')
+                    ->label('Rencana Bulan')
+                    ->helperText('Pilih bulan rencana pelaksanaan kegiatan.')
                     ->options([
                         1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
                         4 => 'April', 5 => 'Mei', 6 => 'Juni',
@@ -37,71 +37,62 @@ class ReportForm
                 TextInput::make('year')
                     ->label('Tahun')
                     ->placeholder('Contoh: 2025')
-                    ->helperText('Masukkan tahun pelaksanaan laporan (4 digit).')
+                    ->helperText('Masukkan tahun rencana pelaksanaan (4 digit).')
                     ->numeric()
                     ->required(),
                 Repeater::make('content')
-                    ->label('Daftar Kegiatan')
-                    ->helperText('Tambahkan satu atau lebih kegiatan yang tercakup dalam laporan ini.')
+                    ->label('Daftar Rencana Kegiatan')
+                    ->helperText('Tambahkan detail rencana kegiatan yang akan diajukan.')
                     ->schema([
                         TextInput::make('name')
                             ->label('Nama Kegiatan')
-                            ->placeholder('Contoh: Seminar Kepemimpinan')
-                            ->helperText('Nama singkat dari kegiatan yang dilaksanakan.')
+                            ->placeholder('Contoh: Seminar Pembukaan')
                             ->required(),
                         DatePicker::make('date')
                             ->label('Tanggal Pelaksanaan')
-                            ->helperText('Pilih tanggal kegiatan berlangsung.')
                             ->required(),
                         TextInput::make('location')
                             ->label('Lokasi Kegiatan')
-                            ->placeholder('Contoh: Aula Utama, Gedung A')
-                            ->helperText('Tempat berlangsungnya kegiatan.')
+                            ->placeholder('Contoh: Aula Kampus')
                             ->required(),
                         RichEditor::make('description')
                             ->label('Deskripsi Kegiatan')
-                            ->helperText('Uraikan detail kegiatan. Anda dapat menyisipkan gambar menggunakan tombol di toolbar.')
+                            ->helperText('Uraikan detail rencana kegiatan.')
                             ->toolbarButtons([
-                                'attachFiles',
-                                'bold',
-                                'italic',
-                                'underline',
-                                'strike',
-                                'link',
-                                'bulletList',
-                                'orderedList',
-                                'blockquote',
-                                'h2',
-                                'h3',
-                                'undo',
-                                'redo',
+                                'attachFiles', 'bold', 'italic', 'underline', 'strike',
+                                'link', 'bulletList', 'orderedList', 'blockquote',
+                                'h2', 'h3', 'undo', 'redo',
                             ])
                             ->fileAttachmentsDisk('public')
-                            ->fileAttachmentsDirectory('kegiatan-images')
+                            ->fileAttachmentsDirectory('proposal-images')
                             ->columnSpanFull(),
                     ])
                     ->grid(2)
                     ->collapsible()
                     ->defaultItems(1)
-                    ->addActionLabel('+ Tambah Kegiatan')
+                    ->addActionLabel('+ Tambah Rencana Kegiatan')
                     ->columnSpanFull(),
                 Select::make('status')
-                    ->label('Status Laporan')
-                    ->helperText('Status ini menunjukkan tahap dokumen laporan saat ini.')
+                    ->label('Status Pengajuan')
+                    ->helperText('Status dokumen pengajuan saat ini.')
                     ->options([
-                        'draft'       => 'Draft',
-                        'processing'  => 'Sedang Diproses',
-                        'finalized'   => 'Selesai',
-                        'failed'      => 'Gagal',
+                        'draft'      => 'Draft',
+                        'processing' => 'Sedang Diproses',
+                        'approved'   => 'Disetujui',
+                        'rejected'   => 'Ditolak',
                     ])
                     ->default('draft')
                     ->visibleOn('edit'),
+                TextInput::make('rejection_reason')
+                    ->label('Alasan Penolakan')
+                    ->helperText('Diisi jika status pengajuan ditolak.')
+                    ->visibleOn('edit')
+                    ->columnSpanFull(),
                 TextInput::make('file_path')
-                    ->label('Path File Dokumen')
-                    ->helperText('Lokasi file dokumen yang sudah digenerate (diisi otomatis).')
+                    ->label('Path Dokumen')
                     ->disabled()
-                    ->maxLength(255)
-                    ->visibleOn('edit'),
+                    ->visibleOn('edit')
+                    ->columnSpanFull(),
             ]);
     }
 }

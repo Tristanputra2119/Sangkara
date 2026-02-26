@@ -29,9 +29,19 @@ class SangkaraPanelProvider extends PanelProvider
             ->id('sangkara')
             ->path('sangkara')
             ->login()
+            ->brandName('Sangkara')
+            ->brandLogo(null)
+            ->favicon(null)
             ->colors([
-                'primary' => Color::Amber,
+                'primary'  => Color::Indigo,
+                'gray'     => Color::Slate,
+                'info'     => Color::Sky,
+                'success'  => Color::Emerald,
+                'warning'  => Color::Amber,
+                'danger'   => Color::Rose,
             ])
+            ->font('Poppins')
+            ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -40,7 +50,6 @@ class SangkaraPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-                FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
