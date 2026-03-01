@@ -32,23 +32,28 @@ class ProposalGeneratorService
         $templateProcessor->setValue('TAHUN', (string) $proposal->year);
         $templateProcessor->setValue('TGL_SEKARANG', Carbon::now()->translatedFormat('d F Y'));
 
-        // --- Dynamic List from Proposal->content (cloneBlock) ---
-        $items = $proposal->content ?? [];
+        // --- Dynamic Data from Proposal->content (No Loop) ---
+        $item = $proposal->content ?? [];
 
-        if (! empty($items)) {
-            $templateProcessor->cloneBlock('block_kegiatan', count($items), true, true);
-
-            foreach ($items as $index => $item) {
-                $i = $index + 1;
-
-                $templateProcessor->setValue("nama_kegiatan#$i", $item['name'] ?? '-');
-                $templateProcessor->setValue("tgl_kegiatan#$i", $item['date'] ?? '-');
-                $templateProcessor->setValue("lok_kegiatan#$i", $item['location'] ?? '-');
-
-                // Support multiline descriptions via XML line breaks
-                $cleanDesc = preg_replace('~\R~u', '</w:t><w:br/><w:t>', strip_tags($item['description'] ?? '-'));
-                $templateProcessor->setValue("deskripsi_lengkap#$i", $cleanDesc);
+        // Backward compatibility for old proposals that used Repeater (array of arrays with UUID keys)
+        if (is_array($item) && count($item) > 0) {
+            $firstElement = reset($item);
+            if (is_array($firstElement)) {
+                $item = $firstElement;
             }
+        }
+
+        if (! empty($item)) {
+            // Clone block exactly once, stripping tags without numbering inner variables
+            $templateProcessor->cloneBlock('block_kegiatan', 1, true, false);
+
+            $templateProcessor->setValue("nama_kegiatan", $item['name'] ?? '-');
+            $templateProcessor->setValue("tgl_kegiatan", $item['date'] ?? '-');
+            $templateProcessor->setValue("lok_kegiatan", $item['location'] ?? '-');
+
+            // Support multiline descriptions via XML line breaks
+            $cleanDesc = preg_replace('~\R~u', '</w:t><w:br/><w:t>', strip_tags($item['description'] ?? '-'));
+            $templateProcessor->setValue("deskripsi_lengkap", $cleanDesc);
         } else {
             $templateProcessor->deleteBlock('block_kegiatan');
         }

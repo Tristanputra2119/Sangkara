@@ -67,6 +67,10 @@ class SangkaraPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->renderHook(
+                \Filament\View\PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+                fn (): string => \Illuminate\Support\Facades\Blade::render('@include("filament.auth.oauth-login")'),
+            );
     }
 }

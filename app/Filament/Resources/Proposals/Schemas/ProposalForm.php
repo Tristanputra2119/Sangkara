@@ -40,9 +40,9 @@ class ProposalForm
                     ->helperText('Masukkan tahun rencana pelaksanaan (4 digit).')
                     ->numeric()
                     ->required(),
-                Repeater::make('content')
-                    ->label('Daftar Rencana Kegiatan')
-                    ->helperText('Tambahkan detail rencana kegiatan yang akan diajukan.')
+                \Filament\Forms\Components\Section::make('Rencana Kegiatan')
+                    ->description('Tambahkan detail rencana kegiatan yang akan diajukan.')
+                    ->statePath('content')
                     ->schema([
                         TextInput::make('name')
                             ->label('Nama Kegiatan')
@@ -67,10 +67,7 @@ class ProposalForm
                             ->fileAttachmentsDirectory('proposal-images')
                             ->columnSpanFull(),
                     ])
-                    ->grid(2)
-                    ->collapsible()
-                    ->defaultItems(1)
-                    ->addActionLabel('+ Tambah Rencana Kegiatan')
+                    ->columns(2)
                     ->columnSpanFull(),
                 Select::make('status')
                     ->label('Status Pengajuan')
