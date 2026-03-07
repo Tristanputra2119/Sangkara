@@ -24,7 +24,8 @@ class TransactionsTable
                     ->numeric()
                     ->sortable(),
                 TextColumn::make('amount')
-                    ->money('IDR') // Formats as IDR, dividing by 100 if cents depending on standard config
+                    ->label('Jumlah')
+                    ->formatStateUsing(fn ($state) => 'Rp ' . number_format($state, 0, ',', '.'))
                     ->sortable(),
                 TextColumn::make('transaction_date')
                     ->date()

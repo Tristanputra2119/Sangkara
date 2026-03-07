@@ -63,7 +63,7 @@ class ProposalForm
                                 'link', 'bulletList', 'orderedList', 'blockquote',
                                 'h2', 'h3', 'undo', 'redo',
                             ])
-                            ->fileAttachmentsDisk('public')
+                            ->fileAttachmentsDisk('cloudinary')
                             ->fileAttachmentsDirectory('proposal-images')
                             ->columnSpanFull(),
                     ])

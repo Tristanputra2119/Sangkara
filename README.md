@@ -1,59 +1,290 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sangkara
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem Manajemen Internal Organisasi Sangkara berbasis web menggunakan Laravel dan Filament Admin Panel.
 
-## About Laravel
+## Tech Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Framework:** Laravel 12
+- **PHP Version:** 8.2+
+- **Database:** PostgreSQL
+- **Admin Panel:** Filament 5.0
+- **Authentication:** Laravel Sanctum + Laravel Socialite (Google OAuth2)
+- **Authorization:** Spatie Laravel Permission + Filament Shield
+- **PDF Generation:** DomPDF
+- **Document Generation:** PHPWord (DOCX)
+- **Cache/Queue:** Redis (Predis)
+- **Testing:** Pest PHP
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requirements
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP >= 8.2
+- PostgreSQL >= 12
+- Composer
+- Node.js & NPM
+- Redis (optional, for queue and cache)
 
-## Learning Laravel
+## Installation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 1. Clone Repository
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+git clone <repository-url>
+cd Sangkara
+```
 
-## Laravel Sponsors
+### 2. Install Dependencies
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+composer install
+npm install
+```
 
-### Premium Partners
+### 3. Environment Setup
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Copy `.env.example` ke `.env`:
 
-## Contributing
+```bash
+cp .env.example .env
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Generate application key:
 
-## Code of Conduct
+```bash
+php artisan key:generate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 4. Database Configuration
 
-## Security Vulnerabilities
+Edit file `.env` dan sesuaikan konfigurasi database PostgreSQL:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=sangkara
+DB_USERNAME=your_db_username
+DB_PASSWORD=your_db_password
+```
+
+Buat database:
+
+```bash
+createdb sangkara
+```
+
+### 5. Google OAuth2 Setup
+
+1. Buka [Google Cloud Console](https://console.cloud.google.com/)
+2. Buat project baru atau pilih project yang sudah ada
+3. Aktifkan **Google+ API**
+4. Buat **OAuth 2.0 Client ID** (Web Application)
+5. Tambahkan **Authorized Redirect URIs**:
+   - `http://127.0.0.1:8000/oauth/google/callback`
+   - `http://localhost:8000/oauth/google/callback`
+6. Copy **Client ID** dan **Client Secret** ke file `.env`:
+
+```env
+APP_URL=http://127.0.0.1:8000
+
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI="${APP_URL}/oauth/google/callback"
+```
+
+### 6. Cloudinary Setup (untuk Image Upload)
+
+1. Buka [Cloudinary Dashboard](https://cloudinary.com/)
+2. Buat akun atau login ke akun yang sudah ada
+3. Buka **Dashboard** dan copy kredensial:
+   - **Cloud Name**
+   - **API Key**
+   - **API Secret**
+4. Tambahkan kredensial ke file `.env`:
+
+```env
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+> **Note:** Semua gambar yang diupload melalui RichEditor di Proposals, Reports, dan Meetings akan otomatis tersimpan di Cloudinary untuk performa yang lebih ringan.
+
+### 7. Run Migrations
+
+```bash
+php artisan migrate --seed
+```
+
+### 8. Storage Link
+
+```bash
+php artisan storage:link
+```
+
+### 9. Clear Cache
+
+```bash
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+```
+
+## Running the Application
+
+### Development Server
+
+```bash
+php artisan serve
+```
+
+Aplikasi akan berjalan di: `http://127.0.0.1:8000`
+
+### Build Assets
+
+Development:
+```bash
+npm run dev
+```
+
+Production:
+```bash
+npm run build
+```
+
+### Queue Worker (Optional)
+
+Jika menggunakan queue untuk background jobs:
+
+```bash
+php artisan queue:work
+```
+
+## Default Access
+
+### Admin Panel
+
+URL: `http://127.0.0.1:8000/sangkara`
+
+### Login Methods
+
+1. **Standard Login**: Email & Password
+2. **Google OAuth2**: Login dengan akun Google
+
+### Roles
+
+- **super_admin**: Full access ke seluruh sistem
+- **panel_user**: Access terbatas sesuai permission yang diberikan
+
+> **Note**: User yang login pertama kali via Google OAuth akan otomatis mendapat role `panel_user`. Untuk upgrade ke `super_admin`, edit manual via database atau Artisan Tinker.
+
+## Features
+
+### Core Modules
+
+1. **User Management**
+   - User CRUD
+   - Role & Permission Management (Filament Shield)
+   - Google OAuth2 Integration
+
+2. **Categories**
+   - Category management untuk organisasi data
+
+3. **Meetings**
+   - Manajemen rapat/pertemuan
+   - Track attendance & status
+   - Meeting creator & attendees
+
+4. **Proposals**
+   - Manajemen proposal organisasi
+   - Generate proposal documents
+
+5. **Reports**
+   - Generate laporan
+   - Export to PDF/DOCX
+
+6. **Transactions**
+   - Financial transaction management
+   - Track income & expenses
+
+### Services
+
+- **DocumentConversionService**: Convert dokumen antar format
+- **FinancialService**: Business logic untuk transaksi keuangan
+- **ProposalGeneratorService**: Generate dokumen proposal otomatis
+
+## Configuration
+
+### Sangkara Officials (Signatures)
+
+Edit file `.env` untuk konfigurasi pejabat yang akan muncul di dokumen:
+
+```env
+SANGKARA_KETUA_NAMA="Nama Ketua"
+SANGKARA_KETUA_NIM="000000000"
+SANGKARA_SEKRE_NAMA="Nama Sekretaris"
+SANGKARA_SEKRE_NIM="000000000"
+```
+
+## Testing
+
+Jalankan test dengan Pest:
+
+```bash
+php artisan test
+```
+
+atau:
+
+```bash
+./vendor/bin/pest
+```
+
+## Code Quality
+
+### Laravel Pint (Code Formatter)
+
+```bash
+./vendor/bin/pint
+```
+
+## Troubleshooting
+
+### Error 400: redirect_uri_mismatch (Google OAuth)
+
+Pastikan:
+1. `APP_URL` di `.env` sesuai dengan URL yang diakses di browser
+2. URL redirect di Google Cloud Console **sama persis** dengan `GOOGLE_REDIRECT_URI`
+3. Clear config cache: `php artisan config:clear`
+
+### User tidak bisa masuk setelah login Google
+
+Pastikan:
+1. Migration sudah dijalankan: `php artisan migrate`
+2. Role `panel_user` atau `super_admin` sudah ada di database
+3. User memiliki salah satu role tersebut
+
+### Permission Denied di Filament
+
+User harus memiliki role yang sesuai. Assign role via Tinker:
+
+```bash
+php artisan tinker
+```
+
+```php
+$user = User::where('email', 'your@email.com')->first();
+$user->assignRole('super_admin');
+```
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Proprietary - Sangkara Organization
+
+## Contact
+
+Untuk pertanyaan dan support, hubungi tim development Sangkara.
+
+---
+
+**Last Updated**: March 2026

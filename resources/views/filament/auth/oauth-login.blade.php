@@ -1,29 +1,23 @@
-<div class="flex flex-col gap-4 mt-6">
-    <div class="relative flex items-center justify-center">
+<div class="mt-4">
+    <div class="relative flex items-center justify-center mb-3">
         <div class="absolute inset-0 flex items-center" aria-hidden="true">
             <div class="w-full border-t border-gray-200 dark:border-white/10"></div>
         </div>
-        <div class="relative flex justify-center text-sm font-medium">
-            <span class="px-2 text-gray-500 bg-white dark:bg-gray-900 dark:text-gray-400">Atau masuk dengan</span>
+        <div class="relative flex justify-center text-xs">
+            <span class="px-2 text-gray-500 bg-white dark:bg-gray-900 dark:text-gray-400">Atau</span>
         </div>
     </div>
 
-    <a href="{{ route('oauth.redirect', ['provider' => 'google']) }}"
-        class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:hover:bg-gray-700">
-        <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-                d="M12.0003 4.75C13.7703 4.75 15.3553 5.36002 16.6053 6.54998L20.0303 3.125C17.9502 1.19 15.2353 0 12.0003 0C7.31028 0 3.25527 2.69 1.28027 6.60998L5.27028 9.70498C6.21525 6.86002 8.87028 4.75 12.0003 4.75Z"
-                fill="#EA4335" />
-            <path
-                d="M23.49 12.275C23.49 11.49 23.415 10.73 23.3 10H12V14.51H18.47C18.18 15.99 17.34 17.25 16.08 18.1L19.945 21.1C22.2 19.01 23.49 15.92 23.49 12.275Z"
-                fill="#4285F4" />
-            <path
-                d="M5.26498 14.2949C5.02498 13.5699 4.88501 12.7999 4.88501 11.9999C4.88501 11.1999 5.01998 10.4299 5.26498 9.7049L1.275 6.60986C0.46 8.22986 0 10.0599 0 11.9999C0 13.9399 0.46 15.7699 1.28 17.3899L5.26498 14.2949Z"
-                fill="#FBBC05" />
-            <path
-                d="M12.0004 24.0001C15.2404 24.0001 17.9654 22.935 19.9454 21.095L16.0804 18.095C15.0054 18.82 13.6204 19.245 12.0004 19.245C8.8704 19.245 6.21537 17.135 5.26538 14.29L1.27539 17.385C3.25539 21.31 7.3104 24.0001 12.0004 24.0001Z"
-                fill="#34A853" />
+    <button type="button" 
+        onclick="window.location.href='{{ route('oauth.redirect', ['provider' => 'google']) }}'"
+        class="fi-btn relative grid-flow-col items-center justify-center font-semibold outline-none transition duration-75 focus-visible:ring-2 rounded-lg fi-color-custom fi-btn-color-danger fi-size-md fi-btn-size-md gap-1.5 px-3 py-2 text-sm shadow-sm bg-custom-600 text-white hover:bg-custom-500 focus-visible:ring-custom-500/50 dark:bg-custom-500 dark:hover:bg-custom-400 dark:focus-visible:ring-custom-400/50"
+        style="--c-400:#ef4444;--c-500:#dc2626;--c-600:#b91c1c; display: grid; width: 100%;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48" aria-hidden="true" class="fi-btn-icon" style="flex-shrink: 0;">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
         </svg>
-        Login dengan Google
-    </a>
+        <span class="fi-btn-label">Login dengan Google</span>
+    </button>
 </div>

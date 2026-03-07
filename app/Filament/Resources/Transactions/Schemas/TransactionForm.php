@@ -25,9 +25,11 @@ class TransactionForm
                     ->required(),
                 TextInput::make('amount')
                     ->label('Jumlah (Rp)')
-                    ->helperText('Masukkan nominal transaksi dalam Rupiah (tanpa titik atau koma).')
+                    ->helperText('Masukkan nominal transaksi dalam Rupiah.')
                     ->numeric()
                     ->prefix('Rp')
+                    ->step(1000)
+                    ->minValue(0)
                     ->required(),
                 DatePicker::make('transaction_date')
                     ->label('Tanggal Transaksi')

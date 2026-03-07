@@ -45,7 +45,7 @@ class MeetingForm
                         'attachFiles', 'bold', 'italic', 'underline',
                         'bulletList', 'orderedList', 'link', 'undo', 'redo',
                     ])
-                    ->fileAttachmentsDisk('public')
+                    ->fileAttachmentsDisk('cloudinary')
                     ->fileAttachmentsDirectory('meeting-files')
                     ->columnSpanFull(),
                 KeyValue::make('metadata')

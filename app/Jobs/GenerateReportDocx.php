@@ -68,7 +68,8 @@ class GenerateReportDocx implements ShouldQueue
                 $templateProcessor->setValue('t_amt#1', '-');
             } else {
                 foreach ($transactions as $transaction) {
-                    $templateProcessor->setValue('t_date#' . $tIndex, $transaction->transaction_date->format('Y-m-d'));
+                    // Format date as "Hari, Tanggal Bulan Tahun" (e.g., "Jumat, 1 Agustus 2026")
+                    $templateProcessor->setValue('t_date#' . $tIndex, $transaction->transaction_date->translatedFormat('l, j F Y'));
                     $templateProcessor->setValue('t_desc#' . $tIndex, $transaction->description ?? ($transaction->category ? $transaction->category->name : ''));
                     // Use raw integer formatting
                     $templateProcessor->setValue('t_amt#' . $tIndex, 'Rp ' . number_format($transaction->amount, 0, ',', '.'));
@@ -84,7 +85,8 @@ class GenerateReportDocx implements ShouldQueue
                 $templateProcessor->setValue('m_title#1', 'No meetings');
             } else {
                 foreach ($meetings as $meeting) {
-                    $templateProcessor->setValue('m_date#' . $mIndex, $meeting->meeting_date->format('Y-m-d H:i'));
+                    // Format date as "Hari, Tanggal Bulan Tahun" (e.g., "Jumat, 1 Agustus 2026")
+                    $templateProcessor->setValue('m_date#' . $mIndex, $meeting->meeting_date->translatedFormat('l, j F Y'));
                     $templateProcessor->setValue('m_title#' . $mIndex, $meeting->title);
                     $mIndex++;
                 }

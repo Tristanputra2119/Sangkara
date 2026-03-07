@@ -48,7 +48,9 @@ class ProposalGeneratorService
             $templateProcessor->cloneBlock('block_kegiatan', 1, true, false);
 
             $templateProcessor->setValue("nama_kegiatan", $item['name'] ?? '-');
-            $templateProcessor->setValue("tgl_kegiatan", $item['date'] ?? '-');
+            // Format date as "Hari, Tanggal Bulan Tahun" (e.g., "Jumat, 1 Agustus 2026")
+            $tglKegiatan = isset($item['date']) ? Carbon::parse($item['date'])->translatedFormat('l, j F Y') : '-';
+            $templateProcessor->setValue("tgl_kegiatan", $tglKegiatan);
             $templateProcessor->setValue("lok_kegiatan", $item['location'] ?? '-');
 
             // Support multiline descriptions via XML line breaks

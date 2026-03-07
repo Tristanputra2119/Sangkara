@@ -76,7 +76,7 @@ class ReportForm
                                 'undo',
                                 'redo',
                             ])
-                            ->fileAttachmentsDisk('public')
+                            ->fileAttachmentsDisk('cloudinary')
                             ->fileAttachmentsDirectory('kegiatan-images')
                             ->columnSpanFull(),
                     ])
