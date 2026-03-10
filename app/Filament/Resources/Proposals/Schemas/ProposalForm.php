@@ -40,21 +40,25 @@ class ProposalForm
                     ->helperText('Masukkan tahun rencana pelaksanaan (4 digit).')
                     ->numeric()
                     ->required(),
-                \Filament\Forms\Components\Section::make('Rencana Kegiatan')
-                    ->description('Tambahkan detail rencana kegiatan yang akan diajukan.')
-                    ->statePath('content')
+                
+                // Repeater for multiple activities
+                Repeater::make('content')
+                    ->label('Daftar Kegiatan')
                     ->schema([
                         TextInput::make('name')
                             ->label('Nama Kegiatan')
                             ->placeholder('Contoh: Seminar Pembukaan')
-                            ->required(),
+                            ->required()
+                            ->columnSpan(1),
                         DatePicker::make('date')
                             ->label('Tanggal Pelaksanaan')
-                            ->required(),
+                            ->required()
+                            ->columnSpan(1),
                         TextInput::make('location')
                             ->label('Lokasi Kegiatan')
                             ->placeholder('Contoh: Aula Kampus')
-                            ->required(),
+                            ->required()
+                            ->columnSpan(2),
                         RichEditor::make('description')
                             ->label('Deskripsi Kegiatan')
                             ->helperText('Uraikan detail rencana kegiatan.')
@@ -68,6 +72,13 @@ class ProposalForm
                             ->columnSpanFull(),
                     ])
                     ->columns(2)
+                    ->defaultItems(1)
+                    ->minItems(1)
+                    ->maxItems(10)
+                    ->addActionLabel('+ Tambah Kegiatan Lain')
+                    ->collapsible()
+                    ->cloneable()
+                    ->itemLabel(fn (array $state): ?string => $state['name'] ?? 'Kegiatan Baru')
                     ->columnSpanFull(),
                 Select::make('status')
                     ->label('Status Pengajuan')

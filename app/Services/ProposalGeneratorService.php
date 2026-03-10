@@ -32,35 +32,35 @@ class ProposalGeneratorService
         $templateProcessor->setValue('TAHUN', (string) $proposal->year);
         $templateProcessor->setValue('TGL_SEKARANG', Carbon::now()->translatedFormat('d F Y'));
 
-        // --- Dynamic Data from Proposal->content (No Loop) ---
-        $item = $proposal->content ?? [];
+        // --- Dynamic Data from Proposal->content ---
+        $contentArray = $proposal->content ?? [];
 
-        // Backward compatibility for old proposals that used Repeater (array of arrays with UUID keys)
-        if (is_array($item) && count($item) > 0) {
-            $firstElement = reset($item);
-            if (is_array($firstElement)) {
-                $item = $firstElement;
+        // Filter valid items
+        $validItems = array_values(array_filter($contentArray, fn($item) => is_array($item)));
+
+        if (!empty($validItems)) {
+            $count = count($validItems);
+
+            // Clone the block N times with indexed variables (nama_kegiatan#1, #2, ...)
+            $templateProcessor->cloneBlock('block_kegiatan', $count, true, true);
+
+            $values = [];
+            foreach ($validItems as $i => $item) {
+                $n = $i + 1;
+                $values["nama_kegiatan#{$n}"] = "{$n}. " . ($item['name'] ?? '-');
+                $values["tgl_kegiatan#{$n}"]  = isset($item['date'])
+                    ? Carbon::parse($item['date'])->translatedFormat('l, j F Y')
+                    : '-';
+                $values["lok_kegiatan#{$n}"]      = $item['location'] ?? '-';
+                $values["deskripsi_lengkap#{$n}"] = strip_tags($item['description'] ?? '-');
             }
-        }
 
-        if (! empty($item)) {
-            // Clone block exactly once, stripping tags without numbering inner variables
-            $templateProcessor->cloneBlock('block_kegiatan', 1, true, false);
-
-            $templateProcessor->setValue("nama_kegiatan", $item['name'] ?? '-');
-            // Format date as "Hari, Tanggal Bulan Tahun" (e.g., "Jumat, 1 Agustus 2026")
-            $tglKegiatan = isset($item['date']) ? Carbon::parse($item['date'])->translatedFormat('l, j F Y') : '-';
-            $templateProcessor->setValue("tgl_kegiatan", $tglKegiatan);
-            $templateProcessor->setValue("lok_kegiatan", $item['location'] ?? '-');
-
-            // Support multiline descriptions via XML line breaks
-            $cleanDesc = preg_replace('~\R~u', '</w:t><w:br/><w:t>', strip_tags($item['description'] ?? '-'));
-            $templateProcessor->setValue("deskripsi_lengkap", $cleanDesc);
+            $templateProcessor->setValues($values);
         } else {
             $templateProcessor->deleteBlock('block_kegiatan');
         }
 
-        // --- Signature Variables (Static / Hardcoded) ---
+        // --- Signature Variables ---
         $templateProcessor->setValue('KETUA_NAMA', 'Made Ngurah Tristan Putra');
         $templateProcessor->setValue('KETUA_NIM', '2401020047');
         $templateProcessor->setValue('SEKRE_NAMA', 'I Putu Krisna Ariwidnyana');
@@ -72,8 +72,9 @@ class ProposalGeneratorService
             mkdir($outputDir, 0755, true);
         }
 
-        $monthPadded = str_pad($proposal->month, 2, '0', STR_PAD_LEFT);
-        $filename = "Pengajuan_PrimDev_{$monthPadded}_{$proposal->year}.docx";
+        // Format: Pengajuan_Kegiatan_Bulan_Maret_2026.docx
+        $bulanName = $carbonDate->translatedFormat('F');
+        $filename = "Pengajuan_Kegiatan_Bulan_{$bulanName}_{$proposal->year}.docx";
         $fullPath = $outputDir.DIRECTORY_SEPARATOR.$filename;
 
         $templateProcessor->saveAs($fullPath);

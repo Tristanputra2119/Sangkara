@@ -43,7 +43,9 @@ class TransactionForm
                 FileUpload::make('proof_path')
                     ->label('Bukti Transaksi (Foto/Struk)')
                     ->helperText('Upload foto struk atau bukti pembayaran (format: jpg, png, pdf).')
+                    ->disk('cloudinary')
                     ->directory('transaction-proofs')
+                    ->visibility('public')
                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf'])
                     ->columnSpanFull(),
             ]);

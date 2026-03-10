@@ -19,6 +19,8 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Auth\TwoFactorChallenge;
 
 class SangkaraPanelProvider extends PanelProvider
 {
@@ -28,7 +30,7 @@ class SangkaraPanelProvider extends PanelProvider
             ->default()
             ->id('sangkara')
             ->path('sangkara')
-            ->login()
+            ->login(Login::class)
             ->brandName('Sangkara')
             ->brandLogo(null)
             ->favicon(null)

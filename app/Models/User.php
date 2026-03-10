@@ -3,6 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -11,7 +14,7 @@ use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     use HasFactory, Notifiable, HasRoles, HasPanelShield;
 
@@ -23,6 +26,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'avatar',
         'password',
         'oauth_id',
         'oauth_provider',
@@ -71,5 +75,49 @@ class User extends Authenticatable
     public function reports(): HasMany
     {
         return $this->hasMany(Report::class);
+    }
+
+    /**
+     * Check if user is an OAuth user
+     */
+    public function isOAuthUser(): bool
+    {
+        return !empty($this->oauth_id) && !empty($this->oauth_provider);
+    }
+
+    /**
+     * Determine if the user can access the Filament panel
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Allow access to Sangkara panel for authenticated users
+        return true;
+    }
+
+    /**
+     * Get the user's avatar URL for Filament navigation
+     */
+    public function getFilamentAvatarUrl(): ?string
+    {
+        // If user has uploaded avatar
+        if ($this->avatar) {
+            // If it's a full URL (Cloudinary), return as is
+            if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+                return $this->avatar;
+            }
+            
+            // Otherwise, it's a local storage path - prepend base URL
+            $url = \Storage::url($this->avatar);
+            
+            // Make sure it's absolute URL for Filament
+            if (!str_starts_with($url, 'http')) {
+                return url($url);
+            }
+            
+            return $url;
+        }
+        
+        // Fallback to UI Avatars with user's name initials
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
     }
 }
