@@ -9,6 +9,18 @@ use PhpOffice\PhpWord\TemplateProcessor;
 class ProposalGeneratorService
 {
     /**
+     * Helper to sanitize text for Word XML (so entities like &nbsp; or &ndash; don't break the docx).
+     */
+    private function sanitizeWordText(?string $text): string
+    {
+        if (empty($text)) {
+            return '';
+        }
+        $decoded = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        return htmlspecialchars($decoded, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+    }
+
+    /**
      * Generate a "Pengajuan Kegiatan Bulanan" document from Proposal->content.
      *
      * @param  Proposal  $proposal  The proposal whose content array drives the document.
@@ -28,9 +40,9 @@ class ProposalGeneratorService
         $carbonDate = Carbon::createFromDate($proposal->year, $proposal->month, 1);
         $bulanUpper = strtoupper($carbonDate->translatedFormat('F'));
 
-        $templateProcessor->setValue('BULAN_UPPER', $bulanUpper);
-        $templateProcessor->setValue('TAHUN', (string) $proposal->year);
-        $templateProcessor->setValue('TGL_SEKARANG', Carbon::now()->translatedFormat('d F Y'));
+        $templateProcessor->setValue('BULAN_UPPER', $this->sanitizeWordText($bulanUpper));
+        $templateProcessor->setValue('TAHUN', $this->sanitizeWordText((string) $proposal->year));
+        $templateProcessor->setValue('TGL_SEKARANG', $this->sanitizeWordText(Carbon::now()->translatedFormat('d F Y')));
 
         // --- Dynamic Data from Proposal->content ---
         $contentArray = $proposal->content ?? [];
@@ -39,32 +51,87 @@ class ProposalGeneratorService
         $validItems = array_values(array_filter($contentArray, fn($item) => is_array($item)));
 
         if (!empty($validItems)) {
-            $count = count($validItems);
+            $namaRun = new \PhpOffice\PhpWord\Element\TextRun();
+            $tglRun = new \PhpOffice\PhpWord\Element\TextRun();
+            $lokRun = new \PhpOffice\PhpWord\Element\TextRun();
 
-            // Clone the block N times with indexed variables (nama_kegiatan#1, #2, ...)
-            $templateProcessor->cloneBlock('block_kegiatan', $count, true, true);
+            // Use a borderless table for description to create true paragraph breaks and avoid Justify stretching
+            $descTable = new \PhpOffice\PhpWord\Element\Table([
+                'borderSize'  => 0,
+                'borderColor' => 'FFFFFF',
+                'width'       => 100 * 50,
+                'unit'        => 'pct',
+                'cellMarginTop' => 0,
+                'cellMarginBottom' => 0,
+            ]);
 
-            $values = [];
+            $fontOptions = ['name' => 'Calibri'];
+            $boldFontOptions = ['name' => 'Calibri', 'bold' => true];
+
             foreach ($validItems as $i => $item) {
+                if ($i > 0) {
+                    $namaRun->addTextBreak();
+                    $tglRun->addTextBreak();
+                    $lokRun->addTextBreak();
+                }
+                
                 $n = $i + 1;
-                $values["nama_kegiatan#{$n}"] = "{$n}. " . ($item['name'] ?? '-');
-                $values["tgl_kegiatan#{$n}"]  = isset($item['date'])
-                    ? Carbon::parse($item['date'])->translatedFormat('l, j F Y')
-                    : '-';
-                $values["lok_kegiatan#{$n}"]      = $item['location'] ?? '-';
-                $values["deskripsi_lengkap#{$n}"] = strip_tags($item['description'] ?? '-');
+                $name = $item['name'] ?? '-';
+                $location = $item['location'] ?? '-';
+                $desc = strip_tags($item['description'] ?? '-');
+
+                // Add 3-space indentation to list items from index 1 onwards to align with item 0
+                $prefix = ($i === 0) ? "{$n}. " : "   {$n}. ";
+
+                $namaRun->addText($prefix . $this->sanitizeWordText($name), $fontOptions);
+                
+                $tglStr = isset($item['date']) ? Carbon::parse($item['date'])->translatedFormat('j F Y') : '-';
+                $tglRun->addText($prefix . $this->sanitizeWordText($tglStr), $fontOptions);
+                
+                $lokRun->addText($prefix . $this->sanitizeWordText($location), $fontOptions);
+                
+                // For Description table, each item starts a new line on the left margin
+                $descTitlePrefix = "{$n}. ";
+
+                // For description: separate row for title and description
+                $descTable->addRow();
+                $descTable->addCell(10000)->addText(
+                    $descTitlePrefix . $this->sanitizeWordText($name), 
+                    $boldFontOptions, 
+                    ['alignment' => 'left']
+                );
+
+                $descTable->addRow();
+                $descTable->addCell(10000)->addText(
+                    $this->sanitizeWordText($desc), 
+                    $fontOptions, 
+                    // Add indentation so all lines of the description align with the title text
+                    ['alignment' => 'both', 'indentation' => ['left' => 360]] 
+                );
+
+                // Add empty row for spacing between items
+                if ($i < count($validItems) - 1) {
+                    $descTable->addRow();
+                    $descTable->addCell(10000)->addText('', $fontOptions);
+                }
             }
 
-            $templateProcessor->setValues($values);
+            $templateProcessor->setComplexValue('nama_kegiatan', $namaRun);
+            $templateProcessor->setComplexValue('tgl_kegiatan', $tglRun);
+            $templateProcessor->setComplexValue('lok_kegiatan', $lokRun);
+            $templateProcessor->setComplexBlock('deskripsi_lengkap', $descTable);
         } else {
-            $templateProcessor->deleteBlock('block_kegiatan');
+            $templateProcessor->setValue('nama_kegiatan', '-');
+            $templateProcessor->setValue('tgl_kegiatan', '-');
+            $templateProcessor->setValue('lok_kegiatan', '-');
+            $templateProcessor->setValue('deskripsi_lengkap', '-');
         }
 
         // --- Signature Variables ---
-        $templateProcessor->setValue('KETUA_NAMA', 'Made Ngurah Tristan Putra');
-        $templateProcessor->setValue('KETUA_NIM', '2401020047');
-        $templateProcessor->setValue('SEKRE_NAMA', 'I Putu Krisna Ariwidnyana');
-        $templateProcessor->setValue('SEKRE_NIM', '2401020004');
+        $templateProcessor->setValue('KETUA_NAMA', $this->sanitizeWordText('Made Ngurah Tristan Putra'));
+        $templateProcessor->setValue('KETUA_NIM', $this->sanitizeWordText('2401020047'));
+        $templateProcessor->setValue('SEKRE_NAMA', $this->sanitizeWordText('I Putu Krisna Ariwidnyana'));
+        $templateProcessor->setValue('SEKRE_NIM', $this->sanitizeWordText('2401020004'));
 
         // --- Save Output ---
         $outputDir = storage_path('app/public/proposals');

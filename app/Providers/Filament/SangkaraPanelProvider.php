@@ -70,9 +70,14 @@ class SangkaraPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->renderHook(
-                \Filament\View\PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
-                fn (): string => \Illuminate\Support\Facades\Blade::render('@include("filament.auth.oauth-login")'),
-            );
+            ->routes(function () {
+                \Illuminate\Support\Facades\Route::get('/two-factor-challenge', \App\Filament\Pages\Auth\TwoFactorChallenge::class)
+                    ->name('auth.two-factor-challenge');
+            });
+            // Hide Google login inject temporarily
+            // ->renderHook(
+            //     \Filament\View\PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+            //     fn (): string => \Illuminate\Support\Facades\Blade::render('@include("filament.auth.oauth-login")'),
+            // );
     }
 }

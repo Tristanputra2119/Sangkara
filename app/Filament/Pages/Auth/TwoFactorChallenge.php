@@ -88,6 +88,9 @@ class TwoFactorChallenge extends SimplePage implements HasForms
             ]);
         }
 
+        // Save latest successful 2FA verification timestamp for 24-hour bypass.
+        $user->markTwoFactorVerified();
+
         // Clear 2FA session data
         session()->forget(['two_factor_user_id', 'two_factor_remember']);
 

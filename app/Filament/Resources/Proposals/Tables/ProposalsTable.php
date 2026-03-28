@@ -33,7 +33,6 @@ class ProposalsTable
                     ->sortable(),
                 TextColumn::make('year')
                     ->label('Tahun')
-                    ->numeric()
                     ->sortable(),
                 TextColumn::make('status')
                     ->label('Status')
@@ -72,28 +71,11 @@ class ProposalsTable
                     ->label('Unduh Dokumen')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
-                    ->form([
-                        \Filament\Forms\Components\Select::make('format')
-                            ->label('Pilih Format Dokumen')
-                            ->options([
-                                'docx' => 'Microsoft Word (.docx)',
-                                'pdf'  => 'PDF (.pdf) - Konversi dari Word',
-                            ])
-                            ->default('docx')
-                            ->required(),
-                    ])
-                    ->action(function (Proposal $record, array $data) {
+                    ->action(function (Proposal $record) {
                         // Generate the DOCX file first
                         $service = app(\App\Services\ProposalGeneratorService::class);
                         $relativePath = $service->generate($record);
                         $fullDocxPath = storage_path('app/public/' . $relativePath);
-
-                        if ($data['format'] === 'pdf') {
-                            // Convert DOCX to PDF
-                            $converter = app(\App\Services\DocumentConversionService::class);
-                            $pdfPath = $converter->convertDocxToPdf($fullDocxPath);
-                            return response()->download($pdfPath)->deleteFileAfterSend(false);
-                        }
 
                         // Just download the DOCX
                         return response()->download($fullDocxPath)->deleteFileAfterSend(false);

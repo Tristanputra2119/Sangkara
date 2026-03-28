@@ -30,6 +30,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'password',
         'oauth_id',
         'oauth_provider',
+        'two_factor_verified_at',
     ];
 
     /**
@@ -52,6 +53,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_verified_at' => 'datetime',
         ];
     }
 
@@ -83,6 +85,28 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
     public function isOAuthUser(): bool
     {
         return !empty($this->oauth_id) && !empty($this->oauth_provider);
+    }
+
+    /**
+     * Determine whether the user can skip 2FA challenge within the last 24 hours.
+     */
+    public function hasRecentTwoFactorVerification(): bool
+    {
+        if (!$this->two_factor_verified_at) {
+            return false;
+        }
+
+        return $this->two_factor_verified_at->greaterThan(now()->subHours(24));
+    }
+
+    /**
+     * Mark current user as having passed 2FA now.
+     */
+    public function markTwoFactorVerified(): void
+    {
+        $this->forceFill([
+            'two_factor_verified_at' => now(),
+        ])->save();
     }
 
     /**

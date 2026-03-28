@@ -21,6 +21,11 @@ class CategoriesTable
                     ->searchable(),
                 TextColumn::make('type')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'income' => 'Pemasukan',
+                        'expense' => 'Pengeluaran',
+                        default => $state,
+                    })
                     ->color(fn (string $state): string => match ($state) {
                         'income' => 'success',
                         'expense' => 'danger',

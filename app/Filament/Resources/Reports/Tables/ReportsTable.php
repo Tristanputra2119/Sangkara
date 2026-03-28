@@ -82,17 +82,7 @@ class ReportsTable
                     ->label('Unduh LPJ')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('primary')
-                    ->form([
-                        \Filament\Forms\Components\Select::make('format')
-                            ->label('Pilih Format Dokumen')
-                            ->options([
-                                'docx' => 'Microsoft Word (.docx)',
-                                'pdf'  => 'PDF (.pdf) - Konversi dari Word',
-                            ])
-                            ->default('docx')
-                            ->required(),
-                    ])
-                    ->action(function (Report $record, array $data) {
+                    ->action(function (Report $record) {
                         if (empty($record->file_path)) {
                             \Filament\Notifications\Notification::make()
                                 ->title('File belum digenerate.')
@@ -108,12 +98,6 @@ class ReportsTable
                                 ->danger()
                                 ->send();
                             return;
-                        }
-
-                        if ($data['format'] === 'pdf') {
-                            $converter = app(\App\Services\DocumentConversionService::class);
-                            $pdfPath = $converter->convertDocxToPdf($fullDocxPath);
-                            return response()->download($pdfPath)->deleteFileAfterSend(false);
                         }
 
                         return response()->download($fullDocxPath)->deleteFileAfterSend(false);

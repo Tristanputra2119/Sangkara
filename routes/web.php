@@ -14,7 +14,4 @@ Route::get('/', function () {
 Route::get('/oauth/{provider}/redirect', [OAuthController::class, 'redirect'])->name('oauth.redirect');
 Route::get('/oauth/{provider}/callback', [OAuthController::class, 'callback'])->name('oauth.callback');
 
-// 2FA Challenge Route
-Route::get('/sangkara/two-factor-challenge', \App\Filament\Pages\Auth\TwoFactorChallenge::class)
-    ->middleware(['web'])
-    ->name('filament.sangkara.auth.two-factor-challenge');
+// 2FA Challenge route moved to SangkaraPanelProvider to inherit panel theme

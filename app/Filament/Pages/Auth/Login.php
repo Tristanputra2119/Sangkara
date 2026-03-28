@@ -41,8 +41,8 @@ class Login extends BaseLogin
 
         $user = Auth::user();
 
-        // Check if user is OAuth user (skip 2FA for OAuth users)
-        if ($user->isOAuthUser()) {
+        // Skip challenge for OAuth users or users who passed 2FA in the last 24 hours.
+        if ($user->isOAuthUser() || $user->hasRecentTwoFactorVerification()) {
             return app(LoginResponse::class);
         }
 

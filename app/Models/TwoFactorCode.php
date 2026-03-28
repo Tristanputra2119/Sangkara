@@ -34,11 +34,16 @@ class TwoFactorCode extends Model
      */
     public static function generateFor(User $user, ?string $ipAddress = null): self
     {
-        // Invalidate any existing unused codes
-        self::where('user_id', $user->id)
+        // Check if user has an active (non-expired, non-used) code
+        // If yes, return it instead of generating a new one
+        $existingCode = self::where('user_id', $user->id)
             ->whereNull('used_at')
             ->where('expires_at', '>', now())
-            ->update(['used_at' => now()]);
+            ->first();
+
+        if ($existingCode) {
+            return $existingCode;
+        }
 
         // Generate 6-digit code
         $code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
